@@ -28,8 +28,11 @@
   /* ---------- contenido ---------- */
   var E27 = D.ediciones[2027];
   function enlace(a) { return '<a href="https://www.instagram.com/' + a[1] + '/" target="_blank" rel="noopener" title="@' + a[1] + '">' + esc(a[0]) + '</a>'; }
-  $('#principales').innerHTML = E27.artistas.slice(0, E27.principales).map(enlace).join('');
-  $('#resto').innerHTML = E27.artistas.slice(E27.principales).map(enlace).join('<i aria-hidden="true">✦</i>');
+  var desde = 0;
+  $('#filas').innerHTML = E27.filas.map(function (n, i) {
+    var fila = E27.artistas.slice(desde, desde + n); desde += n;
+    return '<div class="fila-art' + (i < 4 ? ' fuerte' : '') + '" style="--fs:' + E27.tamanos[i] + '">' + fila.map(enlace).join(' <i aria-hidden="true">✦</i> ') + '</div>';
+  }).join('');
 
   var S_MESA = '(min-width:900px) 34vw, 62vw';
   $('#mesa-mas').innerHTML = E27.fotosExperiencias.map(function (f) { return foto(f, S_MESA, 'Festival Isoca, foto de Agus PH'); }).join('');

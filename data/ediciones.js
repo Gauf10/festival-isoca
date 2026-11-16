@@ -19,8 +19,10 @@ window.ISOCA = {
       nombre: 'Festival Isoca 2027',
       fecha: '13 y 14 de febrero de 2027',
       lugar: 'Club Villa del Parque · Necochea',
-      // Los primeros 9 se muestran como principales. [nombre, usuario de Instagram]
-      principales: 9,
+      // [nombre, usuario de Instagram], en el orden del afiche.
+      // Jerarquía del afiche: cuántos artistas van en cada fila (de mayor a menor) y el tamaño de letra de esa fila.
+      filas: [2, 2, 2, 3, 3, 3, 3, 5, 4, 5, 5, 5],
+      tamanos: [72, 63, 56, 47, 40, 35, 31, 26, 24.5, 23, 21.5, 20],
       fotosExperiencias: ['2026-39', '2026-02', '2025-05', '2024-10', '2026-40'],
       fotosVive: [['2024-12', '2026-35', '2025-32', '2024-07', '2026-19', '2025-12'], ['2026-36', '2024-02', '2025-22', '2026-33', '2024-11', '2025-20'], ['2026-31', '2024-04', '2025-11', '2026-21', 'anteriores-02', '2025-19']],
       // Foto grande antes del cierre.
