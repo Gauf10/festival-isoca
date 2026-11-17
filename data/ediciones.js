@@ -11,6 +11,12 @@ window.ISOCA = {
     musica: ''
   },
 
+  // Juegos con el fondo. Poner false para apagar cada uno.
+  toques: {
+    ondas: true,   // tocar el agua: una onda suave que se abre despacio
+    tiempo: true   // mantener apretado: el tiempo corre (noche → día → atardecer → noche) y queda donde se suelta
+  },
+
   // Ediciones anteriores, en el orden en que aparecen al recorrer la página.
   orden: ['2026', '2025'],
 

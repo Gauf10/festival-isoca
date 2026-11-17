@@ -148,12 +148,41 @@
   document.addEventListener('visibilitychange', function () { visible = !document.hidden; if (visible) requestAnimationFrame(cuadro); });
   var rz; window.addEventListener('resize', function () { clearTimeout(rz); rz = setTimeout(function () { if (esc3d) esc3d.medir(); }, 150); });
 
+  /* ---------- toques sobre el mar y el cielo ----------
+     Se prenden o apagan uno por uno en data/ediciones.js → toques. */
+  var TQ = quieto || !esc3d ? {} : (D.toques || {});
+  var fx = { off: 0, ondas: [] };
+  var tq = { id: null, x: 0, y: 0, t: 0, tactil: false, apretado: false, antes: 0 };
+  function soltar() { tq.id = null; tq.apretado = false; document.documentElement.classList.remove('apretando'); }
+  function toque(x, y, ahora) {
+    var qy = 1 - y / innerHeight;
+    if (TQ.ondas && qy < esc3d.horizonte - .012) { fx.ondas.push({ x: (x / innerWidth - .5) * innerWidth / innerHeight, d: (esc3d.horizonte - qy) / esc3d.horizonte, t: ahora, e: 0 }); if (fx.ondas.length > 3) fx.ondas.shift(); }
+  }
+  if (TQ.ondas || TQ.tiempo) {
+    window.addEventListener('pointerdown', function (e) {
+      if (e.button || (e.target.closest && e.target.closest('a,button,.mesa .foto'))) return;
+      tq.id = e.pointerId; tq.x = e.clientX; tq.y = e.clientY; tq.t = performance.now(); tq.tactil = e.pointerType === 'touch'; tq.apretado = false;
+    }, { passive: true });
+    window.addEventListener('pointermove', function (e) { if (e.pointerId === tq.id && Math.hypot(e.clientX - tq.x, e.clientY - tq.y) > 12) soltar(); }, { passive: true });
+    window.addEventListener('pointerup', function (e) { if (e.pointerId !== tq.id) return; var ah = performance.now(); if (!tq.apretado && ah - tq.t < 380) toque(tq.x, tq.y, ah); soltar(); }, { passive: true });
+    window.addEventListener('pointercancel', soltar, { passive: true });
+    window.addEventListener('blur', soltar);
+    window.addEventListener('contextmenu', function (e) { if (tq.id !== null && tq.tactil) e.preventDefault(); });
+  }
+  function efectos(ahora) {
+    var dt = Math.min(.1, (ahora - tq.antes) / 1000); tq.antes = ahora;
+    // mantener apretado: el tiempo corre y queda donde se suelta (el scroll sigue sumando desde ahí)
+    if (TQ.tiempo && tq.id !== null && !tq.apretado && ahora - tq.t > 380) { tq.apretado = true; document.documentElement.classList.add('apretando'); }
+    if (tq.apretado) fx.off = (fx.off + dt * .085) % esc3d.ciclo;
+    fx.ondas = fx.ondas.filter(function (o) { o.e = (ahora - o.t) / 1000; return o.e < 7; });
+  }
+
   function cuadro(ahora) {
     if (!visible) return;
     if (sm.on) { sm.c += (sm.t - sm.c) * .085; if (Math.abs(sm.t - sm.c) < .4) { sm.c = sm.t; sm.on = false; } window.scrollTo(0, sm.c); }
     var y = window.scrollY, max = tope(), p = max > 0 ? lim(y / max, 0, 1) : 0, H = innerHeight;
     pS += (p - pS) * (quieto ? 1 : .07); mxS += (mx - mxS) * .04; myS += (my - myS) * .04;
-    if (esc3d) esc3d.pintar(pS, quieto ? 0 : (ahora - t0) / 1000, mxS, myS);
+    if (esc3d) { efectos(ahora); esc3d.pintar(pS, quieto ? 0 : (ahora - t0) / 1000, mxS, myS, fx); }
 
     // la navegación se oculta al bajar y vuelve al subir
     if (y > yAnt + 3 && y > 140) nav.classList.add('oculta'); else if (y < yAnt - 3 || y < 140) nav.classList.remove('oculta');

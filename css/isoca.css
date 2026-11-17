@@ -170,3 +170,7 @@ main{position:relative;z-index:2;overflow-x:hidden;overflow-x:clip}
   *,*::before,*::after{animation:none!important;transition:none!important}
   .ver{opacity:1;transform:none;filter:none}.manifiesto .pal{opacity:1!important;transform:none!important;filter:none!important}.intro{display:none}.flecha path{stroke-dashoffset:0}
 }
+
+/* mientras se mantiene apretado para que corra el tiempo, no seleccionar texto */
+html.apretando,html.apretando *{-webkit-user-select:none;user-select:none}
+.arco img{-webkit-touch-callout:none}

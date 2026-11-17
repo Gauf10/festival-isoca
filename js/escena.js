@@ -1,6 +1,7 @@
 /* Festival Isoca · escena realista en WebGL puro (sin librerías).
    Cielo con nubes, estrellas, luna, sol, mar con reflejos y partículas.
-   Uso: var e = IsocaEscena(canvas); e.pintar(progreso0a1, tiempoSeg, mouseX, mouseY) */
+   Uso: var e = IsocaEscena(canvas); e.pintar(progreso0a1, tiempoSeg, mouseX, mouseY, fx)
+   fx (opcional) = efectos de los toques: { off, luna, sol, ondas } */
 window.IsocaEscena = function (cv) {
   'use strict';
   var gl = cv.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'high-performance' });
@@ -11,6 +12,7 @@ window.IsocaEscena = function (cv) {
     'precision highp float;',
     'uniform vec2 R;uniform float T,P,HOR,CLOUD,STARS,PART,MOONA,SUNA;',
     'uniform vec2 MOON,SUN;uniform vec3 CZ,CH,CW,CS;',
+    'uniform vec3 OND[3];',
     'float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}',
     'float ns(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);',
     ' return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}',
@@ -23,7 +25,8 @@ window.IsocaEscena = function (cv) {
     ' float glow=exp(-ds*ds*70.)*1.1+exp(-ds*4.5)*.42;',
     ' c+=CS*glow*SUNA;',
     ' float dm=distance(q,MOON);',
-    ' c+=vec3(.75,.8,.95)*(exp(-dm*6.5)*.2+exp(-dm*dm*90.)*.22)*MOONA;',
+    ' float alt=smoothstep(-.02,.3,MOON.y-HOR);vec3 mt=mix(vec3(1.,.62,.36),vec3(1.),alt)*(.72+.28*alt);',
+    ' c+=vec3(.75,.8,.95)*mt*(exp(-dm*6.5)*.2+exp(-dm*dm*90.)*.22)*MOONA;',
     ' float cl=0.;',
     ' if(CLOUD>0.01){',
     '  vec2 cp=vec2(q.x*1.5+T*.012,q.y*4.4-P*1.2);',
@@ -44,7 +47,7 @@ window.IsocaEscena = function (cv) {
     '    vec2 o=(vec2(h21(id+5.1),h21(id+9.3))-.5)*.5;float d=length(fract(g)-.5-o);float rad=.12+.2*rr;',
     '    cr+=step(.45,rr)*(smoothstep(rad+.05,rad,d)*.55-smoothstep(rad,rad-.07,d)*.75);}',
     '   float limb=zz*.5+.5;',
-    '   vec3 mc=mix(vec3(.42,.43,.48),vec3(1.,.985,.94),clamp(tex+cr*.22,0.,1.))*limb;',
+    '   vec3 mc=mix(vec3(.42,.43,.48),vec3(1.,.985,.94),clamp(tex+cr*.22,0.,1.))*limb*mt;',
     '   c=mix(c,mc,mm*MOONA*(1.-cl*.6));}',
     // disco solar
     '  float sr=.042;float sd=smoothstep(sr,sr-.006,ds);',
@@ -62,12 +65,17 @@ window.IsocaEscena = function (cv) {
     ' else{',
     '  float d=(HOR-uv.y)/HOR;float z=1./(d+.035);',
     '  vec2 w=vec2(q.x*z*1.1,z*1.9);',
+    // ondas de los toques sobre el agua
+    '  float rip=0.;for(int k=0;k<3;k++){vec3 o=OND[k];if(o.z>=0.){float z0=1./(o.y+.035);',
+    '   float dn=length(vec2(q.x*z-o.x*z0,z-z0))/z0;float x=dn-(o.z*.12+.015);',
+    '   rip+=sin(x*80.)*exp(-x*x*240.)*exp(-o.z*.42)*smoothstep(0.,.5,o.z)*smoothstep(7.,4.5,o.z);}}',
     '  float n1=ns(w*2.4+vec2(T*.35,T*.9));float n2=ns(w*6.+vec2(-T*.5,T*1.3));float n3=ns(w*15.+vec2(T*.9,-T*1.7));',
-    '  vec2 r=vec2(q.x+(n1-.5)*.07*(.25+d)+(n2-.5)*.02,HOR+(HOR-uv.y)*(1.-HOR)/HOR*.92+(n2-.5)*.06*(.3+d));',
+    '  vec2 r=vec2(q.x+(n1-.5)*.07*(.25+d)+(n2-.5)*.02,HOR+(HOR-uv.y)*(1.-HOR)/HOR*.92+(n2-.5)*.06*(.3+d))+vec2(rip*.014,rip*.05);',
     '  vec3 ref=sky(r,0.);',
     '  float fres=mix(.9,.38,smoothstep(0.,1.,d));',
     '  c=mix(CW,ref,fres);',
     '  c*=.82+.3*(n1*.6+n2*.4);',
+    '  c+=(CH*.5+vec3(.3,.36,.46))*rip*.2+vec3(.9,.95,1.)*max(rip,0.)*.07;',
     // camino de luz del sol y de la luna
     '  float spark=smoothstep(.5,.95,n2*.55+n3*.6);',
     '  float sw=.025+d*.2;float gs=exp(-pow((q.x-SUN.x)/sw,2.));',
@@ -95,7 +103,7 @@ window.IsocaEscena = function (cv) {
   gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
   var loc = gl.getAttribLocation(pr, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-  var U = {}; ['R', 'T', 'P', 'HOR', 'CLOUD', 'STARS', 'PART', 'MOONA', 'SUNA', 'MOON', 'SUN', 'CZ', 'CH', 'CW', 'CS'].forEach(function (n) { U[n] = gl.getUniformLocation(pr, n); });
+  var U = {}; ['R', 'T', 'P', 'HOR', 'CLOUD', 'STARS', 'PART', 'MOONA', 'SUNA', 'MOON', 'SUN', 'CZ', 'CH', 'CW', 'CS', 'OND[0]'].forEach(function (n) { U[n] = gl.getUniformLocation(pr, n); });
 
   // momentos del día: cenit, horizonte, agua, color del sol, nubes, partículas
   var K = [
@@ -115,23 +123,38 @@ window.IsocaEscena = function (cv) {
   }
   medir();
 
+  function c01(v) { return Math.max(0, Math.min(1, v)); }
+  function mez(a, b, u) { return [a[0] + (b[0] - a[0]) * u, a[1] + (b[1] - a[1]) * u, a[2] + (b[2] - a[2]) * u]; }
+  /* El ciclo completo: 0 noche · .36 amanece · 1 el sol apoyado en el horizonte · de 1 a CICLO anochece y vuelve a empezar.
+     El scroll recorre de 0 a 1; mantener apretado lo empuja más allá.
+     La luna sale poco después de la puesta del sol y se pone ya de día, un poco más a la derecha que el sol. */
+  var NOCHE = .18, CICLO = 1 + NOCHE, SALE_LUNA = CICLO - .1, DURA_LUNA = .5, ond = new Float32Array(9);
+  function cielo(pe) {
+    if (pe > 1) { var u = (pe - 1) / NOCHE, A = K[K.length - 1], N = K[0]; u = u * u * (3 - 2 * u);
+      return { z: mz(A.z, N.z, u), h: mz(A.h, N.h, u), w: mz(A.w, N.w, u), s: mz(A.s, N.s, u), c: A.c + (N.c - A.c) * u, pt: A.pt + (N.pt - A.pt) * u, st: u }; }
+    var i = 0; while (i < K.length - 2 && pe > K[i + 1].p) i++;
+    var a = K[i], b = K[i + 1], k = c01((pe - a.p) / (b.p - a.p));
+    return { z: mz(a.z, b.z, k), h: mz(a.h, b.h, k), w: mz(a.w, b.w, k), s: mz(a.s, b.s, k), c: a.c + (b.c - a.c) * k, pt: a.pt + (b.pt - a.pt) * k, st: Math.max(0, 1 - pe / .4) };
+  }
+
   return {
-    medir: medir,
-    pintar: function (p, t, mx, my) {
-      var i = 0; while (i < K.length - 2 && p > K[i + 1].p) i++;
-      var a = K[i], b = K[i + 1], k = Math.min(1, Math.max(0, (p - a.p) / (b.p - a.p))), asp = cv.width / cv.height;
+    medir: medir, ciclo: CICLO, horizonte: HOR,
+    pintar: function (p, t, mx, my, fx) {
+      var pe = (p + (fx ? fx.off : 0)) % CICLO, e = cielo(pe), asp = cv.width / cv.height, i;
       gl.uniform2f(U.R, cv.width, cv.height); gl.uniform1f(U.T, t); gl.uniform1f(U.P, p); gl.uniform1f(U.HOR, HOR);
-      gl.uniform3fv(U.CZ, mz(a.z, b.z, k)); gl.uniform3fv(U.CH, mz(a.h, b.h, k)); gl.uniform3fv(U.CW, mz(a.w, b.w, k)); gl.uniform3fv(U.CS, mz(a.s, b.s, k));
-      gl.uniform1f(U.CLOUD, a.c + (b.c - a.c) * k); gl.uniform1f(U.PART, a.pt + (b.pt - a.pt) * k);
-      gl.uniform1f(U.STARS, Math.max(0, 1 - p / .4));
-      // luna: sale, sube y se pone antes del amanecer
-      var tm = (p + .1) / .5, ma = Math.max(0, Math.min(1, tm * 6)) * Math.max(0, Math.min(1, (1 - tm) * 6));
-      gl.uniform2f(U.MOON, (.16 + .2 * tm) * asp + mx * .012, HOR + Math.sin(Math.PI * Math.min(1, Math.max(0, tm))) * .56 + .02 + my * .008);
-      gl.uniform1f(U.MOONA, ma);
-      // sol: amanece, sube y termina apoyado en el horizonte
-      var ts = Math.max(0, Math.min(1, (p - .36) / .64));
-      gl.uniform2f(U.SUN, (asp < 1 ? .24 + .14 * ts : .08 + .24 * ts) * asp + mx * .008, HOR - .02 + Math.sin(Math.PI * ts) * .5 + my * .006);
-      gl.uniform1f(U.SUNA, Math.min(1, ts * 14));
+      gl.uniform3fv(U.CZ, e.z); gl.uniform3fv(U.CH, e.h); gl.uniform3fv(U.CW, e.w); gl.uniform3fv(U.CS, e.s);
+      gl.uniform1f(U.CLOUD, e.c); gl.uniform1f(U.PART, e.pt); gl.uniform1f(U.STARS, e.st);
+      // luna: asoma por el horizonte, sube y se hunde del otro lado (sin desvanecerse)
+      var tm = ((pe - SALE_LUNA + CICLO) % CICLO) / DURA_LUNA, arriba = tm <= 1;
+      gl.uniform2f(U.MOON, (.15 + .25 * tm) * asp + mx * .012, arriba ? HOR + .02 + Math.sin(Math.PI * tm) * .56 - .13 * Math.pow(1 - Math.sin(Math.PI * tm), 6) + my * .008 : -1);
+      gl.uniform1f(U.MOONA, arriba ? c01(tm * 30) * c01((1 - tm) * 30) : 0);
+      // sol: amanece, sube y termina apoyado en el horizonte; pasado p = 1 se hunde
+      var ts = Math.max(-.06, (pe - .36) / .64), tx = c01(ts);
+      gl.uniform2f(U.SUN, (asp < 1 ? .2 + .11 * tx : .08 + .22 * tx) * asp + mx * .008, HOR - .02 + Math.sin(Math.PI * Math.min(1.3, ts)) * .5 + my * .006);
+      gl.uniform1f(U.SUNA, c01((ts + .05) * 12) * c01((1.13 - ts) * 8));
+      // ondas de los toques sobre el agua
+      for (i = 0; i < 3; i++) { var o = fx && fx.ondas[i]; ond[i * 3] = o ? o.x : 0; ond[i * 3 + 1] = o ? o.d : 0; ond[i * 3 + 2] = o ? o.e : -1; }
+      gl.uniform3fv(U['OND[0]'], ond);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
   };
