@@ -23,6 +23,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&family=Londrina+Solid:wght@400;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/isoca.css">
+<script>/* intro del portal: el hero espera escondido y el scroll queda quieto hasta que termina */
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("entrando","quieta");if("scrollRestoration" in history)history.scrollRestoration="manual";setTimeout(function(){document.documentElement.classList.remove("entrando","quieta")},14000)}</script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"MusicEvent","name":"Festival Isoca 2027","startDate":"2027-02-13","endDate":"2027-02-14","eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode","location":{"@type":"Place","name":"Club Villa del Parque","hasMap":"https://maps.app.goo.gl/asRHby8seFDc2xvy9","address":{"@type":"PostalAddress","addressLocality":"Necochea","addressRegion":"Buenos Aires","addressCountry":"AR"}},"image":"https://festival-isoca.vercel.app/img/compartir.jpg","url":"https://festival-isoca.vercel.app/","description":"Un encuentro en la naturaleza con talleres, música y acampe.","sameAs":"https://www.instagram.com/isocafestival/"}
 </script>
@@ -30,7 +32,7 @@
 <body>
 
 <div class="escena" aria-hidden="true"><canvas id="cielo"></canvas></div>
-<div class="intro" aria-hidden="true"><img src="img/2027/iso.webp" width="150" height="150" alt=""></div>
+<div class="intro" aria-hidden="true"><div class="portal"><img src="img/2027/iso.webp" width="800" height="800" alt=""></div></div>
 
 <header class="nav">
   <a class="nav__marca" href="#inicio"><img src="img/2027/iso.webp" width="36" height="36" alt="">Isoca</a>
@@ -58,7 +60,7 @@
   </section>
 
   <section class="bloque manifiesto" id="presentacion" aria-label="Presentación">
-    <p class="frase" id="manifiesto"><span class="l">Un encuentro</span><span class="l">en la naturaleza</span><span class="l">con talleres</span><span class="l">música</span><span class="l">acampe</span><span class="l sep">Vení a vivir la</span><span class="l">experiencia Isoca</span></p>
+    <p class="frase" id="manifiesto"><span class="l">Un encuentro en</span><span class="l">la naturaleza con</span><span class="l l3">talleres ✦ música ✦ acampe</span><span class="l sep">Vení a vivir la</span><span class="l">experiencia Isoca</span></p>
   </section>
 
   <section class="bloque grilla" id="grilla">

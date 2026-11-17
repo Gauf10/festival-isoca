@@ -85,8 +85,7 @@ window.ISOCA = {
       fecha: '30 y 31 de enero y 1 de febrero de 2026',
       lugar: 'Club Dannevirke · San Cayetano',
       corto: '2026',
-      corte: 2, // salto de línea después del artista número 2
-      fotos: ['2026-14', '2026-03', '2026-23', '2026-22', '2026-28', '2026-12', '2026-25', '2026-34', '2026-37', '2026-10'],
+      fotos: ['2026-14', '2026-03', '2026-23', '2026-22', '2026-28', '2026-12', '2026-34', '2026-37', '2026-25', '2026-10'],
       texto: 'Tres jornadas en San Cayetano, entre el bosque y la laguna, con música, talleres y actividades participativas.',
       artistas: ['El Plan de la Mariposa', 'Nonpalidece', 'Camionero', 'Mocchi', 'Rumbo Tumba', 'Todo Aparenta Normal', 'Gauchos of the Pampa', 'Las Hermanas Trucco', 'Julieta Laso', 'Edu Schmidt', 'Nación Ekeko', 'Paraná Berreta', 'Qki Dones', 'El Síndrome de Peter', 'Maia Monaco', 'Campo Loop', 'El Árbol de Diego', 'Soy Sofía', 'Sophie Alice', 'Colmado', 'Apiro', 'Qué Pichón']
     },

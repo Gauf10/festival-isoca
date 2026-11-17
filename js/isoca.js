@@ -17,8 +17,34 @@
       '" width="' + mw + '" height="' + mh + '" alt="' + esc(alt) + '" loading="lazy" decoding="async" draggable="false"></figure>';
   }
 
-  // la intro se va sola; este resguardo la quita aunque el navegador pause las animaciones
-  var intro = $('.intro'); if (intro) setTimeout(function () { intro.remove(); }, 3200);
+  // intro: el portal se ubica justo sobre el arco del hero; al terminar la carga se entra por él
+  var raiz = document.documentElement, intro = $('.intro');
+  var listo = function () { raiz.classList.remove('entrando', 'quieta'); };
+  if (intro && raiz.classList.contains('entrando')) {
+    var portal = $('.portal', intro), arcoH = $('.hero .arco');
+    var medir = function () {
+      var r = arcoH.getBoundingClientRect(), s = portal.style;
+      s.left = r.left + 'px'; s.top = r.top + 'px'; s.width = r.width + 'px'; s.height = r.height + 'px';
+      s.setProperty('--crece', Math.min(18, Math.max(innerWidth, innerHeight) * 2.4 / r.width).toFixed(1)); intro.classList.add('listo');
+    };
+    window.scrollTo(0, 0); medir(); window.addEventListener('resize', function () { if (!intro.classList.contains('entra')) medir(); });
+    var entrar = function () {
+      setTimeout(function () {
+        medir(); intro.classList.add('entra');
+        setTimeout(function () { if (intro.parentNode) intro.remove(); }, 4800);
+        setTimeout(function () {
+          raiz.classList.remove('entrando'); raiz.classList.add('aparece');
+          setTimeout(function () { raiz.classList.remove('quieta'); }, 2800); setTimeout(function () { raiz.classList.remove('aparece'); }, 5200);
+        }, 4300);
+      }, Math.max(0, 1800 - performance.now()));
+    };
+    // entra cuando cargó todo, o a los 4 s aunque algo siga cargando
+    var yaEntro = false, entrar1 = function () { if (!yaEntro) { yaEntro = true; entrar(); } };
+    if (document.readyState === 'complete') entrar1(); else { window.addEventListener('load', entrar1); setTimeout(entrar1, Math.max(0, 4000 - performance.now())); }
+    window.addEventListener('keydown', function (e) { if (raiz.classList.contains('quieta') && /^(Space| |ArrowUp|ArrowDown|PageUp|PageDown|Home|End)$/.test(e.code === 'Space' ? 'Space' : e.key)) e.preventDefault(); });
+    window.addEventListener('touchmove', function (e) { if (raiz.classList.contains('quieta')) e.preventDefault(); }, { passive: false });
+    setTimeout(function () { if (intro.parentNode) intro.remove(); listo(); }, 14000); // resguardo si algo no termina de cargar
+  } else { if (intro) intro.remove(); listo(); }
 
   // enlaces configurables
   $$('[data-cta]').forEach(function (a) { a.href = D.enlaces.cta; if (a.hasAttribute('data-cta-texto')) a.textContent = D.enlaces.ctaTexto; });
@@ -58,7 +84,7 @@
 
   // presentación: cada palabra aparece de 0 a 100 con el scroll
   var man = $('#manifiesto'), pals = [];
-  $$('span.l', man).forEach(function (l) { l.innerHTML = l.textContent.trim().split(/\s+/).map(function (p) { return '<span class="pal">' + esc(p) + '</span>'; }).join(' '); });
+  $$('span.l', man).forEach(function (l) { l.innerHTML = l.textContent.trim().split(/\s+/).map(function (p) { return '<span class="pal' + (p === '✦' ? ' est' : '') + '">' + esc(p) + '</span>'; }).join(' '); });
   pals = $$('.pal', man);
 
   /* ---------- aparición ---------- */
@@ -124,7 +150,7 @@
   function tope() { return document.documentElement.scrollHeight - innerHeight; }
   if (fino && !quieto) {
     window.addEventListener('wheel', function (e) {
-      if (e.ctrlKey) return; e.preventDefault();
+      if (e.ctrlKey) return; e.preventDefault(); if (document.documentElement.classList.contains('quieta')) return;
       if (!sm.on) sm.c = sm.t = window.scrollY;
       sm.t = lim(sm.t + e.deltaY * (e.deltaMode === 1 ? 36 : 1), 0, tope()); sm.on = true;
     }, { passive: false });
