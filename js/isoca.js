@@ -145,6 +145,36 @@
     bs.setAttribute('aria-label', act ? 'Apagar sonido ambiente' : 'Encender sonido ambiente');
   });
 
+  /* ---------- ayuda: la i de arriba ---------- */
+  var bi = $('#info'), ay = $('#ayuda');
+  function ayuda(abrir) { ay.hidden = !abrir; bi.setAttribute('aria-expanded', abrir); }
+  if (bi && ay) {
+    bi.addEventListener('click', function (e) { e.stopPropagation(); ayuda(ay.hidden); });
+    $('.ayuda__cerrar', ay).addEventListener('click', function () { ayuda(false); });
+    document.addEventListener('click', function (e) { if (!ay.hidden && !ay.contains(e.target)) ayuda(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') ayuda(false); });
+    window.addEventListener('scroll', function () { if (!ay.hidden && window.scrollY > 140) ayuda(false); }, { passive: true });
+  }
+
+  /* ---------- playlist de Spotify: el reproductor se carga recién al abrirla ---------- */
+  var pl = $('#playlist'), pb = $('#playlist-boton'), pv = $('#playlist-ventana'), spId = /playlist\/([A-Za-z0-9]+)/.exec(D.enlaces.playlist || ''), spCargado = false;
+  if (pl && spId) {
+    pl.hidden = false;
+    pb.addEventListener('click', function () {
+      var abrir = pv.hidden; pv.hidden = !abrir; pb.setAttribute('aria-expanded', abrir); pb.setAttribute('aria-label', abrir ? 'Ocultar la playlist' : 'Abrir la playlist');
+      if (abrir && !spCargado) {
+        spCargado = true;
+        window.onSpotifyIframeApiReady = function (API) {
+          API.createController($('#playlist-sp'), { uri: 'spotify:playlist:' + spId[1], width: '100%', height: 152 }, function (ctl) {
+            // si arranca la playlist, se apaga el mar para que no se mezclen
+            ctl.addListener('playback_update', function (e) { if (e.data && !e.data.isPaused && bs && bs.getAttribute('aria-pressed') === 'true') bs.click(); });
+          });
+        };
+        var s = document.createElement('script'); s.src = 'https://open.spotify.com/embed/iframe-api/v1'; s.async = true; document.body.appendChild(s);
+      }
+    });
+  }
+
   /* ---------- scroll suave con rueda (solo mouse) ---------- */
   var sm = { t: window.scrollY, c: window.scrollY, on: false };
   function tope() { return document.documentElement.scrollHeight - innerHeight; }

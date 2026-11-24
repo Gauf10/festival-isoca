@@ -8,7 +8,9 @@ window.ISOCA = {
     gauf: 'https://gaufgang.com',
     mapa: 'https://maps.app.goo.gl/asRHby8seFDc2xvy9',
     // Sonido de fondo: vacío = ambiente de mar generado en el navegador. Para usar un tema propio, poner la ruta a un .mp3 (por ejemplo 'audio/tema.mp3').
-    musica: ''
+    musica: '',
+    // Playlist de Spotify (link de compartir, por ejemplo https://open.spotify.com/playlist/...). Vacío = no aparece el botón.
+    playlist: ''
   },
 
   // Juegos con el fondo. Poner false para apagar cada uno.
