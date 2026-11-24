@@ -10,7 +10,7 @@ window.ISOCA = {
     // Sonido de fondo: vacío = ambiente de mar generado en el navegador. Para usar un tema propio, poner la ruta a un .mp3 (por ejemplo 'audio/tema.mp3').
     musica: '',
     // Playlist de Spotify (link de compartir, por ejemplo https://open.spotify.com/playlist/...). Vacío = no aparece el botón.
-    playlist: ''
+    playlist: 'https://open.spotify.com/playlist/4UrpK58Q7cnSQwd7USi3ET?go=1&sp_cid=38006ede10eaff8590153eac6046f3b8&utm_source=embed_player_p&utm_medium=desktop&nd=1&dlsi=1653c684f749440e'
   },
 
   // Juegos con el fondo. Poner false para apagar cada uno.
